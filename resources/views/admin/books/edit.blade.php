@@ -84,7 +84,7 @@
                  <input type="hidden" name="description" id="description-input" value="{{ old('description', $book->description) }}">
             </div>
         </div>
-        <button type="submit" class="btn btn-primary" style="margin-top: 15%">Simpan</button>
+        <button type="submit" class="btn btn-primary" style="margin-top: 15%">Simpannn</button>
     </form>
 </div>
 @endsection

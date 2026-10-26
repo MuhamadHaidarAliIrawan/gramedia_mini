@@ -38,8 +38,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'isAdmin'])->group(f
 // Route::get('path',[NamaController::class, 'namaFunc])-> name('nama_path');
 
 // http method : get, post, put, patch, delete
-// put : semua data diganti
-// patch : hanya 1 data diganti
+// put : semua data digantikk
+// patch : hanya 1 data digantikks
 
 // Method nama() : berfungsi untuk meberikan route nama unik
 // Aturan pemberian nama route :
