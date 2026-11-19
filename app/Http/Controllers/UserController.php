@@ -6,6 +6,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Book;
+use App\Models\BookCategory;
+use App\Models\SubscriptionPackage;
+use App\Models\SubscriptionPackageUser;
+use App\Models\Checkout;
+use Laravel\Mcp\WebClient;
 
 class UserController extends Controller
 {
@@ -106,5 +112,59 @@ class UserController extends Controller
     public function destroy(UserController $subscriptionPackageUser)
     {
         //
+    }
+
+    public function home()
+    {
+        $latestBook = Book::orderBy('created_at', 'desc')->limit(10)->get();
+        $freeBook = Book::where('price', 0)->orderBy('created_at', 'desc')->limit(6)->get();
+        $subscriptionPackages = SubscriptionPackage::orderBy('created_at', 'desc')->limit(3)->get();
+        return view('home', compact('latestBook', 'freeBook', 'subscriptionPackages'));
+    }
+
+    public function search(Request $request)
+    {
+        $query = $request->input('q');
+        // LIKE mencari data yang mirip kata yang di cari 
+        //orwhere mencari data dari field lain
+        $books = Book::where('title', 'like', '%' . $query . '%')
+            ->orWhere('writer', 'like', '%' . $query . '%')
+            ->get();
+
+        return view('search-results', compact('books', 'query'));
+    }
+
+    public function profile(Request $request)
+    {
+        $userId = Auth::id();
+
+        // Koleksi Buku : menghitung jumlah data dari table checkouts sesuai dengan id pengguna
+        $checkoutCount = Checkout::where('user_id', $userId)->count();
+
+        // Langganan : menghitung jumlah data dari table subscription_package_users sesuai dengan id pengguna
+        $subscriptionCount = SubscriptionPackageUser::where('user_id', $userId)->count();
+
+        // Dropdown Filter Jenis Langganan : secara default menampilkan daftar transaksi dari Paket Langganan
+        $filter = $request->get('filter', 'paket');
+
+        // Daftar pembelian paket langganan pengguna
+        $subscriptions = SubscriptionPackageUser::with('subscriptionPackage')
+            ->where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Daftar pembelian buku pengguna (jika filter Buku dipilih)
+        $checkouts = Checkout::with('checkoutBooks.book')
+            ->where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('user.profil', compact(
+            'checkoutCount',
+            'subscriptionCount',
+            'filter',
+            'subscriptions',
+            'checkouts'
+        ));
     }
 }   

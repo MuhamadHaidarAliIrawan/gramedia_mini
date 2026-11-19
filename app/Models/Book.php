@@ -15,7 +15,6 @@ class Book extends Model{
         return $this->belongsTo(BookCategory::class);
     }
 
-
     public function checkoutBooks(): HasMany
     {
         return $this->hasMany(CheckoutBook::class);

@@ -7,6 +7,8 @@ use App\Models\BookCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\BooksExport;
 
 class BookController extends Controller
 {
@@ -115,9 +117,10 @@ class BookController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Book $book)
+  public function show($id)
     {
-        //
+        $book = Book::where('id', $id)->with('subscriptionPackageBooks')->first();
+        return view('user.books.show', compact('book'));
     }
 
     /**
@@ -134,7 +137,45 @@ class BookController extends Controller
      */
     public function update(Request $request, Book $book)
     {
-        //
+        $validatedData = $request->validate([
+            'book_category_id' => ['required', 'exists:book_categories,id'],
+            'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,svg,webp'],
+            'title' => ['required', 'string'],
+            'writer' => ['required', 'string'],
+            'publisher' => ['required', 'string'],
+            'price' => ['required', 'numeric'],
+            'language' => ['required', 'string'],
+            'release_date' => ['required', 'date'],
+            'page_of_book' => ['required', 'numeric'],
+            'description' => ['nullable']
+        ]);
+
+        // Handle file upload jika ada gambar sampul baru yang diunggah
+        if ($request->hasFile('cover')) {
+            // 1. Hapus cover lama dari storage jika ada
+            if ($book->cover) {
+                // Ambil nama file asli dari URL (contoh: "/storage/covers/123_file.jpg" -> "covers/123_file.jpg")
+                $oldImagePath = str_replace('/storage/', '', $book->cover);
+
+                if (Storage::disk('public')->exists($oldImagePath)) {
+                    Storage::disk('public')->delete($oldImagePath);
+                }
+            }
+
+            // 2. Simpan cover baru
+            $coverImage = $request->file('cover');
+            $coverImageName = time() . '_' . $coverImage->getClientOriginalName();
+
+            Storage::disk('public')->putFileAs('covers', $coverImage, $coverImageName);
+
+            // 3. Set path URL cover baru ke array data yang divalidasi
+            $validatedData['cover'] = Storage::url('covers/' . $coverImageName);
+        }
+
+        // Update data buku
+        $book->update($validatedData);
+
+        return redirect()->route('admin.books.index')->with('success', 'Data buku berhasil diperbarui.');
     }
 
     /**
@@ -142,6 +183,20 @@ class BookController extends Controller
      */
     public function destroy(Book $book)
     {
-        //
+        if ($book->cover) {
+            $oldImagePath = str_replace('/storage/', '', $book->cover);
+
+            if (Storage::disk('public')->exists($oldImagePath)) {
+                Storage::disk('public')->delete($oldImagePath);
+            }
+        }
+
+        $book->delete();
+        return redirect()->route('admin.books.index')->with('success', 'Buku berhasil dihapus.');
+    }
+
+    public function export()
+    {
+        return Excel::download(new BooksExport, 'books.xlsx');
     }
 }

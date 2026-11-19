@@ -1,0 +1,117 @@
+@extends('layouts.app')
+
+@section('content')
+    <div class="container my-3 ">
+        <div class="row">
+            <h3>Keranjang belanja</h3>
+            @if (session('success'))
+            <div class="alert alert-success alert-dismissable fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"
+                aria-label="Close"></button>
+            </div>
+            @endif
+            <!-- daftar buku -->
+            <div class="col-8">
+                <div class="card">
+                    <div class="card-body">
+                        <input type="checkbox" name="" id="select-all" class="form-check-input item-checkbox">
+                        <label for="select-all" class="ms-2">Pilih semua : <b><span class="cart-count"
+                                    id="{{ $carts->count() }}">0</span>
+                                Buku Terpilih</b></label>
+                    </div>
+                </div>
+
+                @foreach ($carts as $cart)
+                    <div class="card mt-2">
+                        <div class="card-body">
+                            <div class="row align-items-center g-3">
+                                {{-- checkbox --}}
+                                <div class="col-auto">
+                                    <input type="checkbox" name="selected_carts[]" class="form-check-input item-checkbox"
+                                        value="{{ $cart->id }}">
+                                </div>
+                                {{-- detail buku --}}
+                                <div class="col">
+                                    <div class="row row-0 flex-fill">
+                                        {{-- gambar --}}
+                                        <div class="col-md-3">
+                                            <a href="">
+                                                <img src="{{ asset($cart->book->cover ?? '') }}" class="img-fluid rounded"
+                                                    alt="Card side image"
+                                                    style="width: 170px; height: 250px; object-fit; cover;" />
+                                            </a>
+                                        </div>
+                                        <div class="col">
+                                            <div class="card-body h-full d-flex flex-column">
+                                                <h3 class="card-title">
+                                                    <div class="badge"><i class="fa-solid fa-mobile"></i>PDF</div>
+                                                </h3>
+                                                <div class="text-secondary">{{ $cart->book->writer ?? '-' }}
+                                                    <br><span class="text-dark">{{ $cart->book->title ?? '-' }}</span>
+                                                </div>
+                                                <div class="mt-auto pt-3">
+                                                    <h4 class="fa-bold mb-0">
+                                                        @php
+                                                            $price = 0;
+                                                            if ($cart->subscription_package_id == null) {
+                                                                $price = $cart->book->price ?? 0;
+                                                            } else {
+                                                                $price = $cart->subscriptionPackage->price ?? 0;
+                                                            }
+                                                        @endphp
+                                                        <span class="text-warning">Rp
+                                                            {{ number_format($price, 0, ',', '.') }}</span>
+                                                    </h4>
+                                                </div>
+                                                <form action="{{ route('cart.destroy', $cart->id) }}"
+                                                    method="POST"
+                                                    onsubmit="return confirm('Hapus item ini dari keranjang?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger btn-sm mt-2"
+                                                        title="Hapus">
+                                                        Hapus
+                                                    </button>
+
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+
+            </div>
+            <!-- Ringkasan harga -->
+            <div class="col-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-4">Ringkasan keranjang</h5>
+                        <div class="d-flex justify-content-between mb-3 text-muted">
+                            <span>Total Belanja(<span id="total-selected-count">0</span> Buku)</span>
+                            <span class="text-dark fw-medium" id="total-price-text">Rp.0</span>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <div class="d-flex justify-content-between mb-3 text-muted">
+                            <span>Total Belanja</span>
+                            <span class="text-dark" id="discount-text">Rp.0</span>
+                        </div>
+
+                        <form method="GET" id="form-checkout">
+                            <div id="checkout-input"></div>
+                            <button type="submit" class="btn btn-primary w-100 py-2.5 rounded-pill fw-semibold">
+                                Checkout
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection

@@ -3,8 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\SubscriptionPackage;
+use App\Models\SubscriptionPackageUser;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\SubscriptionPackagesExport;
+
 
 class SubscriptionPackageController extends Controller
 {
@@ -22,13 +27,13 @@ class SubscriptionPackageController extends Controller
                 ->editColumn('color', function ($row) {
                     return '
                     <div class="d-flex align-items-center gap-2">
-                        <span class="rounded-circle d-inline-block" style="width: 20px; height: 20px; background-color: '.e($row->color).'; border: 1px solid #dee2e6;"></span>
-                        <span>'.e($row->color).'</span>
+                        <span class="rounded-circle d-inline-block" style="width: 20px; height: 20px; background-color: ' . e($row->color) . '; border: 1px solid #dee2e6;"></span>
+                        <span>' . e($row->color) . '</span>
                     </div>
                 ';
                 })
                 ->editColumn('price', function ($row) {
-                    return 'Rp '.number_format($row->price, 0, ',', '.');
+                    return 'Rp ' . number_format($row->price, 0, ',', '.');
                 })
                 // Menambahkan kolom tombol Aksi (Edit & Hapus)
                 ->addColumn('action', function ($row) {
@@ -38,13 +43,12 @@ class SubscriptionPackageController extends Controller
                     $method = method_field('DELETE');
 
                     return '
-                    <a href="'.$editUrl.'" class="btn btn-sm btn-warning">Edit</a>
-                    <form action="'.$destroyUrl.'" method="POST" class="d-inline">
-                        '.$csrf.'
-                        '.$method.'
+                    <a href="' . $editUrl . '" class="btn btn-sm btn-warning">Edit</a>
+                    <form action="' . $destroyUrl . '" method="POST" class="d-inline">
+                        ' . $csrf . '
+                        ' . $method . '
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm(\'Apakah Anda yakin ingin menghapus paket ini?\')">Hapus</button>
-                    </form>
-                ';
+                    </form> <a class="btn btn-sm btn-success " href="' . route('admin.subscription-package-books', ['packageId' => $row->id]) . '">Buku</a>';
                 })
                 // Memberitahu Yajra bahwa kolom 'action' dan 'color' mengandung tag HTML
                 ->rawColumns(['action', 'color'])
@@ -131,5 +135,40 @@ class SubscriptionPackageController extends Controller
         $subscriptionPackage->delete();
 
         return redirect()->route('admin.subscription-plans.index')->with('success', 'Paket langganan berhasil dihapus.');
+    }
+
+    public function payment($id)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu untuk melakukan pembayaran.');
+        }
+
+        $subscriptionPackage = SubscriptionPackage::findOrFail($id);
+        return view('user.subscription-package-payment', compact('subscriptionPackage'));
+    }
+
+    public function paymentSend(Request $request, $id)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu untuk melakukan pembayaran.');
+        }
+
+        SubscriptionPackageUser::create([
+            'subscription_package_id' => $id,
+            'user_id' => Auth::id(),//mengambil id dari auth (dari user yg login)
+            //expired untuk 30 hari kedepan dari sekarang
+            'expired_date' => now()->addDays(30)->format('Y-m-d')
+            //Y-m-d sesuai format default database : 2026-10-30
+            
+        ]);
+
+        return redirect()->route('home')->with('success', 'Berhasil membeli 
+        paket langganan! silahkan cek halaman profile untuk detail transaksi.');
+
+    }
+
+    public function export()
+    {
+        return Excel::download(new SubscriptionPackagesExport, 'paket-langganan-book.xlsx');
     }
 }

@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\BookCategoriesExport;
+use App\Models\Book;
 use App\Models\BookCategory;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BookCategoryController extends Controller
 {
@@ -67,11 +70,39 @@ class BookCategoryController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the public category page with books.
      */
-    public function show(BookCategory $bookCategory)
+    public function show(BookCategory $bookCategory, Request $request)
     {
-        //
+        $query = Book::where('book_category_id', $bookCategory->id);
+
+        // Search by title or writer
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('writer', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Sort by price or newest
+        $sort = $request->input('sort', 'newest');
+        switch ($sort) {
+            case 'price_asc':
+                $query->orderBy('price', 'asc');
+                break;
+            case 'price_desc':
+                $query->orderBy('price', 'desc');
+                break;
+            case 'newest':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $books = $query->get();
+
+        return view('category-books', compact('bookCategory', 'books', 'sort'));
     }
 
     /**
@@ -113,5 +144,9 @@ class BookCategoryController extends Controller
 
         $bookCategory->delete();
         return redirect()->route('admin.book-categories.index')->with('success', 'Kategori buku berhasil dihapus.');
+    }
+    public function export()
+    {
+        return Excel::download(new BookCategoriesExport, 'book-categories.xlsx');
     }
 }

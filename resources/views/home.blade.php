@@ -1,39 +1,31 @@
 @extends('layouts.app')
 @push('styles')
 <style>
-    .slick-pref::before,
-    .slick-next::before {
-        color: black;
+    .slick-prev:before,
+    .slick-next:before {
+        color: #333;
+    }
+
+    .subscription-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: pointer;
+    }
+
+    .subscription-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15) !important;
     }
 </style>
 @endpush
-
 @section('content')
 @if(session('success'))
-<div class="alert alert-success">{{ session('success' )}}</div>
+<div class="alert alert-success">{{ session('success') }}</div>
 @endif
 @if(session('error'))
-<div class="alert alert-danger">{{ session('error' )}}</div>
-@endif
-@if (Session::get('error'))
-<div class="alert alert-important alert-danger alert-dismissible" role="alert">
-    <div class="d-flex">
-        <div>
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24"
-                height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-                fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M5 12l5 5l10 -10"></path>
-            </svg>
-        </div>
-        <div>{{ Session::get('error') }}</div>
-    </div>
-    <a class="btn-close btn-close-white" data-bs-dismiss="alert"
-        aria-label="close"></a>
-</div>
+<div class="alert alert-danger">{{ session('error') }}</div>
 @endif
 
-<!-- BANNER -->
+{{--- BANNER ---}}
 <div id="carousel-sample" class="carousel slide" data-bs-ride="carousel">
     <div class="carousel-indicators">
         <button type="button" data-bs-target="#carousel-sample" data-bs-slide-to="0" aria-label="Slide 1" aria-current="true" class="active"></button>
@@ -41,344 +33,148 @@
         <button type="button" data-bs-target="#carousel-sample" data-bs-slide-to="2" aria-label="Slide 3"></button>
     </div>
     <div class="carousel-inner">
-        <div class="carousel-item active"><img class="d-block w-100" alt src="https://i.pinimg.com/1200x/58/52/30/58523074e9d6b922d83e5a76de912392.jpg" /></div>
-        <div class="carousel-item"><img class="d-block w-100" alt src="https://i.pinimg.com/1200x/58/52/30/58523074e9d6b922d83e5a76de912392.jpg" /></div>
-        <div class="carousel-item"><img class="d-block w-100" alt src="https://i.pinimg.com/1200x/58/52/30/58523074e9d6b922d83e5a76de912392.jpg" /></div>
-    </div><button class="carousel-control-prev" type="button" data-bs-target="#carousel-sample" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span></button><button class="carousel-control-next" type="button" data-bs-target="#carousel-sample" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span></button>
+        <div class="carousel-item active">
+            <img class="d-block w-100" alt src="https://i.pinimg.com/1200x/87/1c/59/871c59a95205840c0b884d7a425b7481.jpg" />
+        </div>
+        <div class="carousel-item">
+            <img class="d-block w-100" alt src="https://i.pinimg.com/1200x/87/1c/59/871c59a95205840c0b884d7a425b7481.jpg" />
+        </div>
+        <div class="carousel-item">
+            <img class="d-block w-100" alt src="https://i.pinimg.com/1200x/87/1c/59/871c59a95205840c0b884d7a425b7481.jpg" />
+        </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#carousel-sample" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carousel-sample" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
 </div>
 
-<!-- PAKET LANGGANAN -->
-<div class="p-5">
-    <div class="d-flex align-items-center gap-3 py-4">
+{{--- Paket Langganan ---}}
+<div class="mt-4 p-5">
+    <div class="d-flex align-items-center gap-2">
         <span class="badge bg-yellow text-yellow-fg p-2">
             <i class="fa-solid fa-crown fs-3"></i>
             <h2 class="mt-3 text-dark">Paket Langganan</h2>
         </span>
     </div>
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100" style="background: linear-gradient(135deg, #ffffff 0%, #6ef480 100%);">
-                <div class="card-body row">
-                    <div class="col-4"></div>
-                    <div class="col-5 text-center text-dark">
-                        <h2 style="font-weight: bold;">NON FICTION</h2>
+</div>
+<div class="row g-4">
+    @forelse($subscriptionPackages as $package)
+    <div class="col-md-4">
+        <a href="{{ route('subscription.show', $package->id) }}" class="text-decoration-none">
+            <div class="card h-100 subscription-card" style="background: linear-gradient(135deg, #ffffff 0%, {{ $package->color }} 100%); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
+                <div class="card-body row align-items-center">
+                    <div class="col-4 text-center">
+                        <i class="fa-solid fa-crown fa-3x text-dark" style="opacity: 0.35;"></i>
+                    </div>
+                    <div class="col-8 text-center text-dark">
+                        <h2 style="font-weight: bold">{{ strtoupper($package->name_package) }}</h2>
                         <p class="text-secondary" style="font-weight: bold; margin: 0 !important">PACKAGE</p>
                         <div>
-                            Rp <span style="font-size: 2rem; font-weight: bold;" class="text-warning">50.000</span>
-                            <br>
-                            <span class="text-secondary" style="font-weight: bold; margin: 0 !important">30 days</span>
+                            Rp <span style="font-size: 2rem; font-weight: bold;" class="text-warning">{{ number_format($package->price, 0, ',', '.') }}</span>
                         </div>
+                        <p class="text-secondary mt-2" style="font-size: 0.85rem;">{{ $package->description }}</p>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card h-100" style="background: linear-gradient(135deg, #ffffff 0%, #67b7f0 100%);">
-                <div class="card-body row">
-                    <div class="col-4"></div>
-                    <div class="col-5 text-center text-dark">
-                        <h2 style="font-weight: bold;">FICTION</h2>
-                        <p class="text-secondary" style="font-weight: bold; margin: 0 !important">PACKAGE</p>
-                        <div>
-                            Rp <span style="font-size: 2rem; font-weight: bold;" class="text-warning">50.000</span>
-                            <br>
-                            <span class="text-secondary" style="font-weight: bold; margin: 0 !important">30 days</span>
-                        </div>
-                    </div>
+        </a>
+    </div>
+    @empty
+    <div class="col-12">
+        <p class="text-center">Tidak ada paket langganan tersedia.</p>
+    </div>
+    @endforelse
+</div>
 
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card h-100" style="background: linear-gradient(135deg, #ffffff 0%, #f54ce7 100%);">
-                <div class="card-body row">
-                    <div class="col-4"></div>
-                    <div class="col- text-center text-dark">
-                        <h2 style="font-weight: bold;">PREMIUM</h2>
-                        <p class="text-secondary" style="font-weight: bold; margin: 0 !important">PACKAGE</p>
-                        <div>
-                            Rp <span style="font-size: 2rem; font-weight: bold;" class="text-warning">50.000</span>
-                            <br>
-                            <span class="text-secondary" style="font-weight: bold; margin: 0 !important">30 days</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+
+
+{{--- Buku Terbaru ---}}
+<div class="mt-4">
+    <div class="d-flex align-items-center gap-2 mb-4">
+        <h2 class="mt-3 text-dark" style="font-weight: bold">Buku Baru Dirilis</h2>
     </div>
 </div>
 
-<!-- Buku Terbaru -->
-<div class="mt-4">
-    <div class="d-flex align-items-center gap-3 mb-2">
-        <h2 class="text-dark" style="font-weight: bold;">Buku Baru rilis</h2>
-    </div>
-    <div id="wrapper-slider">
-        <div class="px-2">
-            <div class="card">
-                <div class="card-body">
-                    <img src="https://image.gramedia.net/rs:fit:0:0/f:webp/plain/https://cdn.gramedia.com/uploads/picture_meta/2024/5/6/gpvujdd93vyxfj4ncmrxnd.jpeg" alt="Peternakan" class="d-block mx-auto w-75 h-50">
-                    <div class="d-flex gap-2 mt-2">
-                        <p class="badge"><i class="fa-solid fa-mobile"></i></p>
-                        <p class="badge">3+</p>
-                    </div>
-                    <div>
-                        <h5><span style="font-size: 0.8rem" class="text-secondary">Judul Buku</span>
-                            <br><span style="font-size: 1rem">Card with title</span>
-                        </h5>
-                        <h4 style="font-size: 1.2rem; font-weight: bold;">Rp 50.000</h4>
-                    </div>
+<div id="wrapper-slider">
+    @forelse($latestBook as $book)
+    <div class="px-2">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column">
+                <div class="text-center mb-3" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                    <img src="{{ asset($book->cover) }}" class="img-fluid rounded" style="max-height: 100%; object-fit: contain;">
                 </div>
-            </div>
-        </div>
-        <div class="px-2">
-            <div class="card">
-                <div class="card-body">
-                    <img src="https://image.gramedia.net/rs:fit:0:0/f:webp/plain/https://cdn.gramedia.com/uploads/picture_meta/2024/5/6/gpvujdd93vyxfj4ncmrxnd.jpeg" alt="Peternakan" class="d-block mx-auto w-75 h-50">
-                    <div class="d-flex gap-2 mt-2">
-                        <p class="badge"><i class="fa-solid fa-mobile"></i></p>
-                        <p class="badge">3+</p>
-                    </div>
-                    <div>
-                        <h5><span style="font-size: 0.8rem" class="text-secondary">Judul Buku</span>
-                            <br><span style="font-size: 1rem">Card with title</span>
-                        </h5>
-                        <h4 style="font-size: 1.2rem; font-weight: bold;">Rp 50.000</h4>
-                    </div>
+                <div class="d-flex gap-2 mb-3">
+                    <span class="badge"><i class="fa-solid fa-mobile"></i>PDF</span>
+                    <span class="badge">3+</span>
                 </div>
-            </div>
-        </div>
-        <div class="px-2">
-            <div class="card">
-                <div class="card-body">
-                    <img src="https://image.gramedia.net/rs:fit:0:0/f:webp/plain/https://cdn.gramedia.com/uploads/picture_meta/2024/5/6/gpvujdd93vyxfj4ncmrxnd.jpeg" alt="Peternakan" class="d-block mx-auto w-75 h-50">
-                    <div class="d-flex gap-2 mt-2">
-                        <p class="badge"><i class="fa-solid fa-mobile"></i></p>
-                        <p class="badge">3+</p>
-                    </div>
-                    <div>
-                        <h5><span style="font-size: 0.8rem" class="text-secondary">Judul Buku</span>
-                            <br><span style="font-size: 1rem">Card with title</span>
-                        </h5>
-                        <h4 style="font-size: 1.2rem; font-weight: bold;">Rp 50.000</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="px-2">
-            <div class="card">
-                <div class="card-body">
-                    <img src="https://image.gramedia.net/rs:fit:0:0/f:webp/plain/https://cdn.gramedia.com/uploads/picture_meta/2024/5/6/gpvujdd93vyxfj4ncmrxnd.jpeg" alt="Peternakan" class="d-block mx-auto w-75 h-50">
-                    <div class="d-flex gap-2 mt-2">
-                        <p class="badge"><i class="fa-solid fa-mobile"></i></p>
-                        <p class="badge">3+</p>
-                    </div>
-                    <div>
-                        <h5><span style="font-size: 0.8rem" class="text-secondary">Judul Buku</span>
-                            <br><span style="font-size: 1rem">Card with title</span>
-                        </h5>
-                        <h4 style="font-size: 1.2rem; font-weight: bold;">Rp 50.000</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="px-2">
-            <div class="card">
-                <div class="card-body">
-                    <img src="https://image.gramedia.net/rs:fit:0:0/f:webp/plain/https://cdn.gramedia.com/uploads/picture_meta/2024/5/6/gpvujdd93vyxfj4ncmrxnd.jpeg" alt="Peternakan" class="d-block mx-auto w-75 h-50">
-                    <div class="d-flex gap-2 mt-2">
-                        <p class="badge"><i class="fa-solid fa-mobile"></i></p>
-                        <p class="badge">3+</p>
-                    </div>
-                    <div>
-                        <h5><span style="font-size: 0.8rem" class="text-secondary">Judul Buku</span>
-                            <br><span style="font-size: 1rem">Card with title</span>
-                        </h5>
-                        <h4 style="font-size: 1.2rem; font-weight: bold;">Rp 50.000</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="px-2">
-            <div class="card">
-                <div class="card-body">
-                    <img src="https://image.gramedia.net/rs:fit:0:0/f:webp/plain/https://cdn.gramedia.com/uploads/picture_meta/2024/5/6/gpvujdd93vyxfj4ncmrxnd.jpeg" alt="Peternakan" class="d-block mx-auto w-75 h-50">
-                    <div class="d-flex gap-2 mt-2">
-                        <p class="badge"><i class="fa-solid fa-mobile"></i></p>
-                        <p class="badge">3+</p>
-                    </div>
-                    <div>
-                        <h5><span style="font-size: 0.8rem" class="text-secondary">Judul Buku</span>
-                            <br><span style="font-size: 1rem">Card with title</span>
-                        </h5>
-                        <h4 style="font-size: 1.2rem; font-weight: bold;">Rp 50.000</h4>
-                    </div>
+                <div class="mt-auto">
+                    <h5 class="mb-1"><span style="font-size: 0.8rem" class="text-secondary">{{ $book->writer }}</span>
+                        <br><a href="{{ route('books.show', $book->id) }}" style="font-size: 1rem">{{ $book->title }}</a>
+                    </h5>
+                    <h4 style="font-size: 1.2rem; font-weight: bold;" class="mb-0">Rp
+                        {{ number_format($book->price, 0, ',', '.') }}
+                    </h4>
                 </div>
             </div>
         </div>
     </div>
+    @empty
+    <p class="text-center">Tidak ada buku terbaru.</p>
+    @endforelse
 </div>
 
 {{--- Buku Gratis ---}}
 <div class="mt-4">
-    <div class="d-flex align-items-center gap-2 mb-4 mx-5">
+    <div class="d-flex align-items-center gap-2 mb-4 mx-3">
         <h2 class="mt-3 text-dark" style="font-weight: bold;">Buku Gratis</h2>
-    </div>
-
-    <div class="row">
-        <div class="col-4">
-            <div class="card d-flex flex-column">
-                <div class="row row-0 flex-fill">
-                    <div class="col-md-3">
-                        <a href="#">
-                            <img src="https://image.gramedia.net/rs:fit:0:0/f:webp/plain/https://cdn.gramedia.com/uploads/product-metas/semv-ptm-e.jpg" alt="">
-                        </a>
-                    </div>
-                    <div class="col">
-                        <div class="card-body h-full d-flex flex-column">
-                            <h3 class="card-title">
-                                <div class="badge"><i class="fa-solid fa-mobile"></i>PDF</div>
-                            </h3>
-                            <div class="text-secondary">Penulis <br><span class="text-dark">Judul Buku</span></div>
-                            <div class="d-flex align-items-center pt-4 mt-auto">
-                                <h3>
-                                    <span class="text-decoration-line-through text-secondary">Rp 50.000</span>
-                                    <span class="text-dark">Rp 0</span>
-                                </h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-4">
-            <div class="card d-flex flex-column">
-                <div class="row row-0 flex-fill">
-                    <div class="col-md-3">
-                        <a href="#">
-                            <img src="https://image.gramedia.net/rs:fit:0:0/f:webp/plain/https://cdn.gramedia.com/uploads/product-metas/semv-ptm-e.jpg" alt="">
-                        </a>
-                    </div>
-                    <div class="col">
-                        <div class="card-body h-full d-flex flex-column">
-                            <h3 class="card-title">
-                                <div class="badge"><i class="fa-solid fa-mobile"></i>PDF</div>
-                            </h3>
-                            <div class="text-secondary">Penulis <br><span class="text-dark">Judul Buku</span></div>
-                            <div class="d-flex align-items-center pt-4 mt-auto">
-                                <h3>
-                                    <span class="text-decoration-line-through text-secondary">Rp 50.000</span>
-                                    <span class="text-dark">Rp 0</span>
-                                </h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-4 ">
-            <div class="card d-flex flex-column">
-                <div class="row row-0 flex-fill">
-                    <div class="col-md-3">
-                        <a href="#">
-                            <img src="https://image.gramedia.net/rs:fit:0:0/f:webp/plain/https://cdn.gramedia.com/uploads/product-metas/semv-ptm-e.jpg" alt="">
-                        </a>
-                    </div>
-                    <div class="col">
-                        <div class="card-body h-full d-flex flex-column">
-                            <h3 class="card-title">
-                                <div class="badge"><i class="fa-solid fa-mobile"></i>PDF</div>
-                            </h3>
-                            <div class="text-secondary">Penulis <br><span class="text-dark">Judul Buku</span></div>
-                            <div class="d-flex align-items-center pt-4 mt-auto">
-                                <h3>
-                                    <span class="text-decoration-line-through text-secondary">Rp 50.000</span>
-                                    <span class="text-dark">Rp 0</span>
-                                </h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-4 mt-2">
-            <div class="card d-flex flex-column">
-                <div class="row row-0 flex-fill">
-                    <div class="col-md-3">
-                        <a href="#">
-                            <img src="https://image.gramedia.net/rs:fit:0:0/f:webp/plain/https://cdn.gramedia.com/uploads/product-metas/semv-ptm-e.jpg" alt="">
-                        </a>
-                    </div>
-                    <div class="col">
-                        <div class="card-body h-full d-flex flex-column">
-                            <h3 class="card-title">
-                                <div class="badge"><i class="fa-solid fa-mobile"></i>PDF</div>
-                            </h3>
-                            <div class="text-secondary">Penulis <br><span class="text-dark">Judul Buku</span></div>
-                            <div class="d-flex align-items-center pt-4 mt-auto">
-                                <h3>
-                                    <span class="text-decoration-line-through text-secondary">Rp 50.000</span>
-                                    <span class="text-dark">Rp 0</span>
-                                </h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-4 mt-2">
-            <div class="card d-flex flex-column">
-                <div class="row row-0 flex-fill">
-                    <div class="col-md-3">
-                        <a href="#">
-                            <img src="https://image.gramedia.net/rs:fit:0:0/f:webp/plain/https://cdn.gramedia.com/uploads/product-metas/semv-ptm-e.jpg" alt="">
-                        </a>
-                    </div>
-                    <div class="col">
-                        <div class="card-body h-full d-flex flex-column">
-                            <h3 class="card-title">
-                                <div class="badge"><i class="fa-solid fa-mobile"></i>PDF</div>
-                            </h3>
-                            <div class="text-secondary">Penulis <br><span class="text-dark">Judul Buku</span></div>
-                            <div class="d-flex align-items-center pt-4 mt-auto">
-                                <h3>
-                                    <span class="text-decoration-line-through text-secondary">Rp 50.000</span>
-                                    <span class="text-dark">Rp 0</span>
-                                </h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-4 mt-2">
-            <div class="card d-flex flex-column">
-                <div class="row row-0 flex-fill">
-                    <div class="col-md-3">
-                        <a href="#">
-                            <img src="https://image.gramedia.net/rs:fit:0:0/f:webp/plain/https://cdn.gramedia.com/uploads/product-metas/semv-ptm-e.jpg" alt="">
-                        </a>
-                    </div>
-                    <div class="col">
-                        <div class="card-body h-full d-flex flex-column">
-                            <h3 class="card-title">
-                                <div class="badge"><i class="fa-solid fa-mobile"></i>PDF</div>
-                            </h3>
-                            <div class="text-secondary">Penulis <br><span class="text-dark">Judul Buku</span></div>
-                            <div class="d-flex align-items-center pt-4 mt-auto">
-                                <h3>
-                                    <span class="text-decoration-line-through text-secondary">Rp 50.000</span>
-                                    <span class="text-dark">Rp 0</span>
-                                </h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
+<div class="row">
+    @forelse($freeBook as $book)
+    <div class="col-4 mb-3">
+        <div class="card d-flex flex-column h-100">
+            <div class="row row-0 flex-fill">
+                <div class="col-md-3">
+                    {{-- Perbaikan: Mengarahkan link gambar ke detail buku yang benar --}}
+                    <a href="{{ route('books.show', $book->id) }}">
+                        <img src="{{ asset($book->cover) }}" class="w-100 h-100 object-cover" style="object-fit: cover;">
+                    </a>
+                </div>
+                <div class="col">
+                    <div class="card-body h-full d-flex flex-column">
+                        <h3 class="card-title">
+                            <div class="badge"><i class="fa-solid fa-mobile"></i>PDF</div>
+                        </h3>
+                        <div class="text-secondary">
+                            {{ $book->writer }}<br>
+                            {{-- Perbaikan: Judul buku juga diberi link agar bisa diklik --}}
+                            <a href="{{ route('books.show', $book->id) }}" class="text-dark text-decoration-none fw-bold">
+                                {{ $book->title }}
+                            </a>
+                        </div>
+                        <div class="d-flex align-items-center pt-4 mt-auto">
+                            <h3>
+                                <span class="text-decoration-line-through text-secondary">Rp. 50.000</span>
+                                <span class="text-dark">Rp. 0</span>
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @empty
+    <div class="col-12">
+        <p class="text-center">Tidak ada buku gratis.</p>
+    </div>
+    @endforelse
+
+</div>
 @endsection
 
 @push('scripts')
@@ -413,12 +209,11 @@
                         slidesToScroll: 1
                     }
                 }
-
-                // Anda dapat menghapus fungsi slick pada breakpoint tertentu sekarang dengan menambahkan:
+                // You can unslick at a given breakpoint now by adding:
                 // settings: "unslick"
-                // sebagai pengganti dari objek settings
+                // instead of a settings object
             ]
         });
-    });
+    })
 </script>
 @endpush
