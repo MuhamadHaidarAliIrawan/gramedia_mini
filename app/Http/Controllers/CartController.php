@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
+use App\Models\SubscriptionPackageUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,8 +14,29 @@ class CartController extends Controller
      */
     public function index()
     {
+        $userId = Auth::id();
         $carts = Cart::where('user_id', Auth::user()->id)->with('book')->get();
-        return view('user.books.cart', compact('carts'));
+
+        $activePackageIds = SubscriptionPackageUser::where('user_id', $userId)
+            ->whereDate('expired_date', '>', today())
+            ->pluck('subscription_package_id');
+
+        $packageUserNotBought = $carts
+            ->whereNotNull('subscription_package_id')
+            ->pluck('subscription_package_id')
+            ->unique()
+            ->diff($activePackageIds)
+            ->values();
+
+        $carts->each(function ($cart) use ($packageUserNotBought) {
+            $cart->display_price = $cart->subscriptionPackage ? $cart->subscriptionPackage->price :
+                $cart->book->price;
+
+            $cart->needs_package = $packageUserNotBought->contains($cart->subscription_package_id);
+        });
+
+        $totalPrice = $carts->sum('display_price');
+        return view('user.books.cart', compact('carts', 'totalPrice'));
     }
 
     /**
