@@ -10,7 +10,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('checkout', function (Blueprint $table) {
+        Schema::table('checkouts', function (Blueprint $table) {
             $table->string('order_code')->unique();
             $table->string('snap_token')->nullable();
             $table->dateTime('paid_date')->nullable();
@@ -23,7 +23,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('checkout', function (Blueprint $table) {
+        Schema::table('checkouts', function (Blueprint $table) {
              $table->dropColumn('order_code')->unique();
             $table->dropColumn('snap_token')->nullable();
             $table->dropColumn('paid_date')->nullable();

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('checkout_book', function (Blueprint $table) {
+        Schema::table('checkout_books', function (Blueprint $table) {
             $table->foreignId('subscription_package_id')->nullable()->constrained('subscription_packages')
             ->onDelete('cascade');
             $table->integer('price');
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('checkout_book', function (Blueprint $table) {
+        Schema::table('checkout_books', function (Blueprint $table) {
             $table->dropForeign(['subscription_package_id']);
             $table->dropColumn(['subscription_package_id']);
             $table->dropColumn(['price']);
