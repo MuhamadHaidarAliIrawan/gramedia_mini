@@ -65,7 +65,7 @@
                                         </form>
                                     </div>
                                 </div>
-                            </div>
+                            </div> 
                         </div>
                     </div>
                 </div>
@@ -106,7 +106,8 @@
                         <span class="text-dark" id="total-price-text">Rp 0</span>
                     </div>
 
-                    <form method="GET" id="form-checkout">
+                    <form method="POST" action="{{ route('checkout.store') }}" id="form-checkout">
+                        @csrf
                         <div id="checkout-inputs"></div>
                         <!-- Tombol checkout otomatis disable karena di JS sudah diatur saat checked.length === 0 -->
                         <button type="submit" id="btn-checkout" class="btn btn-primary w-100 py-2.5 rounded-pill fw-semibold">

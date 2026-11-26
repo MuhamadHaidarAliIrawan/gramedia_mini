@@ -6,6 +6,7 @@ use App\Http\Controllers\SubscriptionPackageBookController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
 use Illuminate\Support\Facades\Route;
 use App\Models\SubscriptionPackage;
 use App\Models\Cart;
@@ -13,9 +14,11 @@ use App\Models\Cart;
 Route::get('/', [UserController::class, 'home'])->name('home');
 Route::get('/search', [UserController::class, 'search'])->name('search');
 Route::get('/books/{id}', [BookController::class, 'show'])->name('books.show');
+Route::post('payment/midtrans-notification', [CheckoutController::class, 'receive']);
 Route::get('/category/{bookCategory}', [BookCategoryController::class, 'show'])->name('category.books');
 Route::get('/subscriptions/{packageId}', [SubscriptionPackageBookController::class, 'show'])->name('subscriptions.show');
-Route::get('/subscription/{packageId}', [SubscriptionPackageBookController::class, 'show'])->name('subscription.show');
+
+//Route::get('/subscription/{packageId}', [SubscriptionPackageBookController::class, 'show'])->name('subscription.show');
 
 Route::middleware(['IsGuest'])->group(function () {
     Route::get('/register', function () {
@@ -32,12 +35,16 @@ Route::middleware(['IsLoggedIn'])->group(function () {
     Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
     Route::delete('cart/{id}', [CartController::class, 'destroy'])->name('cart.destroy');
 
+    Route::post('checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    //mengambil snap token dr midtrans setelah membuat checkout
+    Route::get('checkout/{id}/snap', [CheckoutController::class, 'show'])->name('checkout.show');
 
     Route::get('profile', [UserController::class, 'profile'])->name('profile');
     Route::get('profil', [UserController::class, 'profile'])->name('profil');
     Route::get('/subscription-packages/{id}/payment', [SubscriptionPackageController::class, 'payment'])->name('subscription-packages.payment');
     Route::post('/subscription-packages/{id}/payment', [SubscriptionPackageController::class, 'paymentSend'])->name('subscription-packages.payment.send');
 });
+
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'isAdmin'])->group(function () {
     Route::get('/dashboard', function () {

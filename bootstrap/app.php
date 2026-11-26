@@ -20,6 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'IsLoggedIn' => IsLoggedIn::class,
             'isAdmin' => IsAdmin::class,
         ]);
+        $middleware->preventRequestForgery
+        (except: ['payment/midtrans-notification']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
